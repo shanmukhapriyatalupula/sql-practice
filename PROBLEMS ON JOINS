@@ -1,0 +1,115 @@
+CREATE DATABASE COLLEGE;
+USE COLLEGE;
+CREATE TABLE Student(
+	student_id INT PRIMARY KEY NOT NULL,
+    name varchar(50),
+    age INT,
+    gender VARCHAR(10),
+    department_id VARCHAR(10),
+    enrollment_date DATE
+);
+
+CREATE TABLE Course(
+	course_id INT PRIMARY KEY NOT NULL,
+    name varchar(50),
+    credits INT,
+    instructor_id INT
+);
+
+CREATE TABLE Enrollment(
+	enrollment_id INT PRIMARY KEY NOT NULL,
+    student_id INT,
+    course_id INT,
+    grade VARCHAR(10),
+    FOREIGN KEY(student_id) REFERENCES Student(student_id),
+    FOREIGN KEY(course_id) REFERENCES Course(Course_id)
+);
+
+
+INSERT INTO Student(student_id,name,age,gender,department_id,enrollment_date) VALUES (1,"Smith",20,"F",1,"2021-09-01");
+INSERT INTO student(student_id, name, age, gender, department_id, enrollment_date) VALUES
+(2, "Bob Johnson", 22, "M", 2, "2020-09-01"),
+(3, "Carol White", 21, "F", 1, "2021-01-15"),
+(4, "Dave Brown", 23, "M", 3, "2019-09-01"),
+(5, "Eve Davis", 20, "F", 2, "2021-09-01");
+
+SELECT *
+FROM student;
+
+INSERT INTO course(course_id, name, credits, instructor_id) VALUES
+(1, "Math 101", 3, 1),
+(2, "English 101", 3, 2),
+(3, "History 101", 4, 3),
+(4, "Science 101", 4, 1),
+(5, "Art 101", 2, 2);
+
+INSERT INTO enrollment(enrollment_id, student_id, course_id, grade) VALUES
+(1, 1, 1, "A"),
+(2, 1, 2, "B"),
+(3, 2, 1, "B"),
+(4, 2, 3, "C"),
+(5, 3, 4, "A"),
+(6, 3, 1, "B"),
+(7, 4, 5, "C");
+
+CREATE TABLE Department (
+    department_id INT PRIMARY KEY,
+    name VARCHAR(50)
+);
+
+CREATE TABLE Instructor (
+    instructor_id INT PRIMARY KEY,
+    name VARCHAR(50),
+    department_id INT,
+    FOREIGN KEY (department_id) REFERENCES Department(department_id)
+);
+
+INSERT INTO Department (department_id, name) VALUES
+(1, 'Science'),
+(2, 'Arts'),
+(3, 'History');
+
+INSERT INTO Instructor (instructor_id, name, department_id) VALUES
+(1, 'Prof. Adams', 1),
+(2, 'Dr. Baker', 2),
+(3, 'Prof. Clark', 3);
+
+SELECT DISTINCT s.student_id, s.name
+FROM Student s
+JOIN Enrollment e ON s.student_id = e.student_id;
+
+SELECT s.name
+FROM student s LEFT JOIN Enrollment e
+ON s.student_id=e.enrollment_id;
+
+SELECT s.name,s.student_id,COALESCE(avg(e.grade),0) AS average_grade
+FROM student s LEFT JOIN Enrollment e
+ON s.student_id=e.student_id
+GROUP BY s.name,s.student_id;
+
+SELECT c.course_id,c.name,count(s.student_id) as students
+FROM student s JOIN Enrollment e JOIN Course c
+ON s.student_id=e.enrollment_id and e.course_id=c.course_id
+GROUP BY c.course_id,c.name;
+
+SELECT d.name,count(s.student_id) AS student_count
+FROM Student s JOIN Department d
+ON s.department_id=d.department_id
+GROUP BY(d.department_id)
+ORDER BY student_count DESC
+LIMIT 1;
+
+SELECT s.name,sum(c.credits) AS total_credits
+FROM student s JOIN Course c JOIN Enrollment e
+ON s.student_id = e.student_id and e.course_id = c.course_id
+GROUP BY s.student_id,s.name;
+
+SELECT c.course_id,c.name
+FROM Course c JOIN Instructor i
+ON c.instructor_id=i.instructor_id
+WHERE i.name="Prof.Adams";
+
+SELECT s.name
+FROM student s JOIN Course c JOIN Enrollment e
+ON s.student_id = e.student_id and e.course_id = c.course_id
+WHERE c.name in ("Math 101","Science 101");
